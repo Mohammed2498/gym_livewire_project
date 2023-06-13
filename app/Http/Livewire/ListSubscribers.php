@@ -20,7 +20,6 @@ class ListSubscribers extends Component
     public $name;
     public $image;
     public $phone;
-
     public $subscriber;
     public $subscriberId;
     public $editSubscriberId;
