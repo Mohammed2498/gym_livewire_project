@@ -26,8 +26,10 @@
     <link href="{{asset('assets/dashboard/css/flag-icon.min.css')}}" rel="stylesheet" type="text/css">
     <link href="{{asset('assets/dashboard/css/style.css')}}" rel="stylesheet" type="text/css">
     <!-- DataTables css -->
-    <link href="{{asset('')}}assets/dashboard/plugins/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
-    <link href="{{asset('')}}assets/dashboard/plugins/datatables/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+    <link href="{{asset('')}}assets/dashboard/plugins/datatables/dataTables.bootstrap4.min.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="{{asset('')}}assets/dashboard/plugins/datatables/buttons.bootstrap4.min.css" rel="stylesheet"
+          type="text/css"/>
     <!-- End css -->
     @livewireStyles
 </head>
@@ -50,19 +52,11 @@
                         <div class="tab-pane fade show active" id="v-pills-crm" role="tabpanel"
                              aria-labelledby="v-pills-crm-tab">
                             <ul class="vertical-menu">
-                                <li><h5 class="menu-title">CRM</h5></li>
-                                <li><a href="index.html"><img
+                                <li><h5 class="menu-title">Rock-Gym</h5></li>
+                                <li><a href="{{route('admin.subscribers')}}"><img
                                             src="{{asset('assets/dashboard/images/svg-icon/dashboard.svg')}}"
-                                            class="img-fluid" alt="dashboard">Subscribers</a></li>
-                                <li><a href="crm-projects.html"><img
-                                            src="{{asset('assets/dashboard/images/svg-icon/reports.svg')}}"
-                                            class="img-fluid" alt="projects">Projects</a></li>
-                                <li><a href="crm-lead-status.html"><img
-                                            src="{{asset('assets/dashboard/images/svg-icon/charts.svg')}}"
-                                            class="img-fluid" alt="leads">Lead Status</a></li>
-                                <li><a href="crm-clients.html"><img
-                                            src="{{asset('assets/dashboard/images/svg-icon/customers.svg')}}"
-                                            class="img-fluid" alt="clients">Clients</a></li>
+                                            class="img-fluid" alt="dashboard">الشمتركين</a></li>
+
                             </ul>
                         </div>
                     </div>
@@ -223,12 +217,12 @@
                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img
                                                 src="{{asset('assets/dashboard/images/users/profile.svg')}}"
                                                 class="img-fluid" alt="profile"><span
-                                                class="live-icon">John Doe</span><span
+                                                class="live-icon">{{ Auth::user()->name }}</span><span
                                                 class="feather icon-chevron-down live-icon"></span></a>
                                         <div class="dropdown-menu" aria-labelledby="profilelink">
                                             <div class="dropdown-item">
                                                 <div class="profilename">
-                                                    <h5>John Doe</h5>
+                                                    <h5>{{ Auth::user()->name }}</h5>
                                                 </div>
                                             </div>
                                             <div class="userbox">
@@ -244,9 +238,15 @@
                                                                 class="img-fluid" alt="email">Email</a>
                                                     </li>
                                                     <li class="media dropdown-item">
-                                                        <a href="#" class="profile-icon"><img
+                                                        <a href="{{ route('logout') }}" class="profile-icon"
+                                                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                                        ><img
                                                                 src="{{asset('assets/dashboard/images/svg-icon/logout.svg')}}"
                                                                 class="img-fluid" alt="logout">Logout</a>
+                                                        <form id="logout-form" action="{{ route('logout') }}"
+                                                              method="POST" style="display: none;">
+                                                            @csrf
+                                                        </form>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -387,7 +387,7 @@
 
 </script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.toast').toast('show');
     });
 </script>

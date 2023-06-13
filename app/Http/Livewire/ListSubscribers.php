@@ -78,7 +78,7 @@ class ListSubscribers extends Component
             'name' => $this->name,
             'phone' => $this->phone,
         ];
-
+        
         if ($this->image) {
             $imagePath = $this->image->store('/', 'subscribers');
             $data['image'] = $imagePath;

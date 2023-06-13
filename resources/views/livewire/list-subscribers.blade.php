@@ -7,7 +7,7 @@
     </div>
 </x-slot>
 <x-slot:pageHeader>
-    Subscribers
+    المشتركون
 </x-slot:pageHeader>
 <div class="col-lg-12">
     <div class="card m-b-30">
@@ -26,7 +26,7 @@
                         <th scope="col">الصورة</th>
                         <th scope="col">تاريخ التسجيل</th>
                         <th scope="col">تاريخ الانتهاء</th>
-                        <th scope="col">المدة</th>
+                        <th scope="col"> المدة المتبقية</th>
                         <th scope="col">حالة الاشتراك</th>
                         <th scope="col">الأوامر</th>
                     </tr>
@@ -56,7 +56,7 @@
                             </td>
                             <td>
                                 @if ($subscriber->subscription)
-                                    {{ $subscriber->subscription->duration_in_months ?? '' }} Months
+                               {{ $subscriber->subscription->remaining_duration['days'] }} يوم
                                 @else
                                 @endif
                             </td>

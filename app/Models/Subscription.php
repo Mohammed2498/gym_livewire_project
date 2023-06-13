@@ -38,4 +38,25 @@ class Subscription extends Model
         $end = Carbon::parse($this->end_date);
         return $start->diffInMonths($end);
     }
+
+    public function getRemainingDurationAttribute()
+    {
+        $endDate = $this->end_date;
+        $now = Carbon::now();
+
+        // Calculate the remaining duration in days
+        $remainingDays = $endDate->diffInDays($now);
+
+        // Calculate the remaining duration in months
+        $remainingMonths = $endDate->diffInMonths($now);
+
+        // Calculate the remaining duration in weeks
+        $remainingWeeks = $endDate->diffInWeeks($now);
+
+        return [
+            'days' => $remainingDays,
+            'months' => $remainingMonths,
+            'weeks' => $remainingWeeks,
+        ];
+    }
 }
