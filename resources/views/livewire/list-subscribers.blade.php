@@ -261,14 +261,13 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleLargeModalLabel">اضافة اشتراك
-                        للمشترك: {{$subscriber->name ??''}} </h5>
+                    <h5 class="modal-title" id="exampleLargeModalLabel">
+                      اضافاة اشتراك </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" wire:click="closeModal">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-
                     <form wire:submit.prevent="storeSubscription">
                         <div class="form-group">
                             <input type="hidden" wire:model="subscriberId" readonly>
@@ -276,6 +275,7 @@
                         <div class="form-group">
                             <label for="subscriptionType">نوع الاشتراك:</label>
                             <select wire:model="subscriptionType" class="form-control" id="subscriptionType">
+                                <option value="" selected></option>
                                 <option value="specified">بالأشهر:</option>
                                 <option value="custom">مخصص:</option>
                             </select>

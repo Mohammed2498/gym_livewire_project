@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->enum('status', ['active', 'expired'])->default('active');
             $table->integer('duration')->default(1);
-            $table->string('subscription_type')->nullable();
+            $table->string('subscription_type')->default('specified');
             $table->timestamps();
         });
     }

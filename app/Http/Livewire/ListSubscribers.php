@@ -27,7 +27,7 @@ class ListSubscribers extends Component
     public $editSubscriberPhone;
     public $deleteSubscriberId;
     public $showModal = false;
-    public $subscriptionType = 'specified';
+    public $subscriptionType;
     public $duration;
     public $startDate;
     public $endDate;
@@ -78,7 +78,7 @@ class ListSubscribers extends Component
             'name' => $this->name,
             'phone' => $this->phone,
         ];
-        
+
         if ($this->image) {
             $imagePath = $this->image->store('/', 'subscribers');
             $data['image'] = $imagePath;
@@ -154,7 +154,6 @@ class ListSubscribers extends Component
         $this->subscriptionType = 'specified';
         $this->customStartDate = date('Y-m-d');
         $this->customEndDate = date('Y-m-d', strtotime('+1 month'));
-        $this->resetValidation();
         $this->resetInputFields();
         $this->dispatchBrowserEvent('showAddSubscriptionModal');
     }
@@ -175,7 +174,8 @@ class ListSubscribers extends Component
                 'subscriber_id' => $this->subscriberId,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'status' => $status
+                'status' => $status,
+                'subscription_type' => $this->subscriptionType,
             ]);
             if ($this->duration) {
                 $subscriptionData['duration'] = $this->duration;
@@ -189,7 +189,8 @@ class ListSubscribers extends Component
                 'subscriber_id' => $this->subscriberId,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'status' => $status
+                'status' => $status,
+                'subscription_type' => $this->subscriptionType,
             ]);
         }
 
@@ -207,12 +208,10 @@ class ListSubscribers extends Component
 
     public function updateSubscriptionModal($subscriberId)
     {
-        $this->resetValidation();
         $this->subscriberId = $subscriberId;
         $this->subscriptionType = 'specified';
         $this->customStartDate = date('Y-m-d');
         $this->customEndDate = date('Y-m-d', strtotime('+1 month'));
-        $this->resetValidation();
         $this->resetInputFields();
         $this->dispatchBrowserEvent('showUpdateSubscriptionModal');
     }
@@ -251,12 +250,13 @@ class ListSubscribers extends Component
         $subscription->end_date = $endDate;
         $subscription->status = $status;
 
+
         if ($this->subscriptionType === 'specified') {
             $subscription->duration = $this->duration;
         } else {
             $subscription->duration = 1;
         }
-
+        $subscription->subscription_type = $this->subscriptionType;
         $subscription->save();
         $this->resetInputFields();
         $this->showModal = false;
