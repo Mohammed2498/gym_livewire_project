@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
 });
 Route::middleware(['auth'])->name('admin.')->prefix('rock-gym/admin')->group(callback: function () {
     Route::get('/subscribers',\App\Http\Livewire\ListSubscribers::class)->name('subscribers');
+    Route::get('/home',\App\Http\Livewire\SubscriberStats::class)->name('home');
 });
 
 

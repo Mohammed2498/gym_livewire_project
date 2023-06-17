@@ -46,9 +46,18 @@ class ListSubscribers extends Component
 
     public function mount()
     {
+        $this->updateSubscriptionStatus();
         $this->subscribers = Subscriber::with('subscription');
     }
+    public function updateSubscriptionStatus()
+    {
+        $subscriptions = Subscription::all();
 
+        foreach ($subscriptions as $subscription) {
+            $subscription->status = now()->greaterThan($subscription->end_date) ? 'expired' : 'active';
+            $subscription->save();
+        }
+    }
     public function addNewSubscriber()
     {
         $this->showModal = false;
@@ -169,40 +178,33 @@ class ListSubscribers extends Component
         if ($this->subscriptionType === 'specified') {
             $startDate = Carbon::now();
             $endDate = $startDate->copy()->addMonths($this->duration);
-            $status = $endDate->isPast() ? 'expired' : 'active';
-            $subscriptionData = ([
-                'subscriber_id' => $this->subscriberId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'status' => $status,
-                'subscription_type' => $this->subscriptionType,
-            ]);
-            if ($this->duration) {
-                $subscriptionData['duration'] = $this->duration;
-            }
         } else {
-            // Use the custom start and end dates
             $startDate = $this->customStartDate;
             $endDate = $this->customEndDate;
-            $status = now()->greaterThan($endDate) ? 'expired' : 'active';
-            $subscriptionData = ([
-                'subscriber_id' => $this->subscriberId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'status' => $status,
-                'subscription_type' => $this->subscriptionType,
-            ]);
         }
 
+        $status = now()->greaterThanOrEqualTo($endDate) ? 'expired' : 'active';
+
+        $subscriptionData = [
+            'subscriber_id' => $this->subscriberId,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'status' => $status,
+            'subscription_type' => $this->subscriptionType,
+        ];
+
+        if ($this->subscriptionType === 'specified') {
+            $subscriptionData['duration'] = $this->duration;
+        }
         Subscription::create($subscriptionData);
+
         $this->resetInputFields();
         $this->showModal = false;
         $this->dispatchBrowserEvent('subscriptionAddedSuccessfully');
-
-        // Update status to "expired" if the end date is already passed
-        $subscription = Subscription::find($this->subscriberId);
-        if ($subscription && now()->greaterThan($subscription->end_date)) {
-            $subscription->update(['status' => 'expired']);
+        $subscription = Subscription::where('subscriber_id', $this->subscriberId)->latest()->first();
+        if ($subscription && now()->greaterThanOrEqualTo($subscription->end_date)) {
+            $subscription->status = 'expired';
+            $subscription->save();
         }
     }
 
@@ -238,17 +240,18 @@ class ListSubscribers extends Component
         if ($this->subscriptionType === 'specified') {
             $startDate = Carbon::now();
             $endDate = $startDate->copy()->addMonths($this->duration);
-            $status = $endDate->isPast() ? 'expired' : 'active';
         } else {
             // Use the custom start and end dates
             $startDate = $this->customStartDate;
             $endDate = $this->customEndDate;
-            $status = now()->greaterThan($endDate) ? 'expired' : 'active';
         }
 
+        $status = now()->greaterThanOrEqualTo($endDate) ? 'expired' : 'active';
+
+        $subscription->status = $status;
         $subscription->start_date = $startDate;
         $subscription->end_date = $endDate;
-        $subscription->status = $status;
+
 
 
         if ($this->subscriptionType === 'specified') {
@@ -256,16 +259,18 @@ class ListSubscribers extends Component
         } else {
             $subscription->duration = 1;
         }
-        $subscription->subscription_type = $this->subscriptionType;
+
         $subscription->save();
+
+        if (now()->greaterThanOrEqualTo($subscription->end_date)) {
+            $subscription->status = 'expired';
+            $subscription->save();
+        }
+
         $this->resetInputFields();
         $this->showModal = false;
         $this->dispatchBrowserEvent('subscriptionUpdatedSuccessfully');
-        // Update status to "expired" if the end date is already passed
-        $subscription = Subscription::find($this->subscriberId);
-        if ($subscription && now()->greaterThan($subscription->end_date)) {
-            $subscription->update(['status' => 'expired']);
-        }
+
     }
 
     public function deleteSubscriptionModal($subscriptionId)

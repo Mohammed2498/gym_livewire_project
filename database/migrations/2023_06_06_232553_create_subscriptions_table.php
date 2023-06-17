@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('subscriber_id');
             $table->foreign('subscriber_id')->references('id')->on('subscribers')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->enum('status', ['active', 'expired'])->default('active');
+            $table->datetime('start_date');
+            $table->datetime('end_date');
+            $table->enum('status', ['active', 'expired']);
             $table->integer('duration')->default(1);
             $table->string('subscription_type')->default('specified');
             $table->timestamps();

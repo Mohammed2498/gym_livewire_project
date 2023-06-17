@@ -24,14 +24,6 @@ class Subscription extends Model
         return Carbon::parse($value);
     }
 
-    public function getStatusAttribute($value)
-    {
-        if ($this->end_date && $this->end_date->isPast()) {
-            return 'expired';
-        }
-        return $value;
-    }
-
     public function getDurationInMonthsAttribute()
     {
         $start = Carbon::parse($this->start_date);

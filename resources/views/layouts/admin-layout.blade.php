@@ -30,6 +30,7 @@
           type="text/css"/>
     <link href="{{asset('')}}assets/dashboard/plugins/datatables/buttons.bootstrap4.min.css" rel="stylesheet"
           type="text/css"/>
+
     <!-- End css -->
     @livewireStyles
 </head>
@@ -53,6 +54,9 @@
                              aria-labelledby="v-pills-crm-tab">
                             <ul class="vertical-menu">
                                 <li><h5 class="menu-title">Rock-Gym</h5></li>
+                                <li><a href="{{route('admin.home')}}"><img
+                                            src="{{asset('assets/dashboard/images/svg-icon/dashboard.svg')}}"
+                                            class="img-fluid" alt="dashboard">الرثيسية</a></li>
                                 <li><a href="{{route('admin.subscribers')}}"><img
                                             src="{{asset('assets/dashboard/images/svg-icon/dashboard.svg')}}"
                                             class="img-fluid" alt="dashboard">الشمتركين</a></li>
@@ -267,13 +271,13 @@
             <div class="row align-items-center">
                 <div class="col-md-8 col-lg-8">
                     <h4 class="page-title">{{$pageHeader??''}}</h4>
-                    <div class="breadcrumb-list">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">CRM</li>
-                        </ol>
-                    </div>
+{{--                    <div class="breadcrumb-list">--}}
+{{--                        <ol class="breadcrumb">--}}
+{{--                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>--}}
+{{--                            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>--}}
+{{--                            <li class="breadcrumb-item active" aria-current="page">CRM</li>--}}
+{{--                        </ol>--}}
+{{--                    </div>--}}
                 </div>
                 <div class="col-md-4 col-lg-4">
                     {{$action??''}}

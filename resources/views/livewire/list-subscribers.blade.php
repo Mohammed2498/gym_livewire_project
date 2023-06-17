@@ -56,7 +56,7 @@
                             </td>
                             <td>
                                 @if ($subscriber->subscription)
-                               {{ $subscriber->subscription->remaining_duration['days'] }} يوم
+                                    متبقي {{ $subscriber->subscription->remaining_duration['days'] }}  يوم
                                 @else
                                 @endif
                             </td>
@@ -262,7 +262,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleLargeModalLabel">
-                      اضافاة اشتراك </h5>
+                        اضافاة اشتراك </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" wire:click="closeModal">
                         <span aria-hidden="true">×</span>
                     </button>
