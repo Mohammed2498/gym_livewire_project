@@ -49,12 +49,13 @@ class ListSubscribers extends Component
         $this->updateSubscriptionStatus();
         $this->subscribers = Subscriber::with('subscription');
     }
+
     public function updateSubscriptionStatus()
     {
         $subscriptions = Subscription::all();
 
         foreach ($subscriptions as $subscription) {
-            $subscription->status = now()->greaterThan($subscription->end_date) ? 'expired' : 'active';
+            $subscription->status = now()->greaterThanOrEqualTo($subscription->end_date) ? 'expired' : 'active';
             $subscription->save();
         }
     }
@@ -201,6 +202,7 @@ class ListSubscribers extends Component
         $this->resetInputFields();
         $this->showModal = false;
         $this->dispatchBrowserEvent('subscriptionAddedSuccessfully');
+
         $subscription = Subscription::where('subscriber_id', $this->subscriberId)->latest()->first();
         if ($subscription && now()->greaterThanOrEqualTo($subscription->end_date)) {
             $subscription->status = 'expired';

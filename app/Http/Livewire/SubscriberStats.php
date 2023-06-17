@@ -9,9 +9,9 @@ use App\Models\Subscription;
 
 class SubscriberStats extends Component
 {
-    public $subscriberCount;
-    public $activeCount;
-    public $expiredCount;
+    public $totalSubscribers;
+    public $activeSubscribers;
+    public $expiredSubscribers;
 
     public function mount()
     {
