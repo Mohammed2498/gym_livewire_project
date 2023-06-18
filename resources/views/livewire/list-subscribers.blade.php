@@ -16,26 +16,30 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
+
                 <table
                     class="table foo-filtering-table footable footable-2 footable-filtering footable-filtering-right breakpoint-lg"
                     data-filtering="true" style="">
-                    <thead>
-                    <tr class="footable-filtering">
-                        <th colspan="7">
-                            <form class="form-inline">
-                                <div class="form-group footable-filtering-search"><label class="sr-only">البحث</label>
-                                    <div class="input-group"><input wire:model.debounce.100ms="search" type="text"
-                                                                    class="form-control"
-                                                                    placeholder="البحث">
 
-                                    </div>
-                                </div>
-                            </form>
+                    <thead>
+                    <tr>
+                        <th colspan="2">
+                            <div class="form-group">
+                                <label for="status-filter" class="mr-1">فلترة حسب:</label>
+                                <select class="form-control" wire:model="statusFilter" id="status-filter">
+                                    <option value="all">الكل</option>
+                                    <option value="active">الاشتراكات الفعالة</option>
+                                    <option value="expired">الاشتراكات المنتهية</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th colspan="3">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="البحث" wire:model.debounce.100ms="search">
+                            </div>
                         </th>
                     </tr>
                     <tr class="footable-header">
-
-
                         <th data-breakpoints="xs" class="footable-first-visible" style="display: table-cell;">الرقم</th>
                         <th style="display: table-cell;">الاسم</th>
                         <th style="display: table-cell;">الجوال</th>

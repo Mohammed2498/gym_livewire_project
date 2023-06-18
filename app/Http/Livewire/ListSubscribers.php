@@ -31,12 +31,13 @@ class ListSubscribers extends Component
     public $duration;
     public $startDate;
     public $endDate;
-    public $status ;
+    public $status;
     public $customStartDate;
     public $customEndDate;
     public $deleteSubscriptionId;
     public $subscriptionId;
     public $search;
+    public $statusFilter = 'all';
 
 
     public function render()
@@ -44,6 +45,10 @@ class ListSubscribers extends Component
         $subscribers = Subscriber::with('subscription')
             ->when($this->search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
+            })->when($this->statusFilter !== 'all', function ($query) {
+                $query->whereHas('subscription', function ($query) {
+                    $query->where('status', $this->statusFilter);
+                });
             })
             ->paginate(10);
         return view('livewire.list-subscribers', ['subscribers' => $subscribers])->layout('layouts.admin-layout');
@@ -64,6 +69,7 @@ class ListSubscribers extends Component
             $subscription->save();
         }
     }
+
     public function addNewSubscriber()
     {
         $this->showModal = false;
@@ -86,7 +92,7 @@ class ListSubscribers extends Component
     {
         $this->validate([
             'name' => 'required',
-            'phone' => ['required', 'numeric',]// 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'phone' => ['required', 'numeric', 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/']// 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
         ]);
 
         $data = [
@@ -260,7 +266,6 @@ class ListSubscribers extends Component
         $subscription->end_date = $endDate;
 
 
-
         if ($this->subscriptionType === 'specified') {
             $subscription->duration = $this->duration;
         } else {
@@ -288,7 +293,9 @@ class ListSubscribers extends Component
 
         $this->dispatchBrowserEvent('deleteSubscriptionModal');
     }
-    public function deleteSubscription(){
+
+    public function deleteSubscription()
+    {
         $subscription = Subscription::find($this->deleteSubscriptionId);
         if ($subscription) {
             $subscription->delete();
