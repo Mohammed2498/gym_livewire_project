@@ -45,7 +45,7 @@ class ListSubscribers extends Component
             ->when($this->search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->paginate(20);
+            ->paginate(10);
         return view('livewire.list-subscribers', ['subscribers' => $subscribers])->layout('layouts.admin-layout');
     }
 
