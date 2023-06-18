@@ -36,11 +36,16 @@ class ListSubscribers extends Component
     public $customEndDate;
     public $deleteSubscriptionId;
     public $subscriptionId;
+    public $search;
 
 
     public function render()
     {
-        $subscribers = Subscriber::all();
+        $subscribers = Subscriber::with('subscription')
+            ->when($this->search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->paginate(20);
         return view('livewire.list-subscribers', ['subscribers' => $subscribers])->layout('layouts.admin-layout');
     }
 
@@ -299,7 +304,7 @@ class ListSubscribers extends Component
         $this->phone = '';
         $this->startDate = '';
         $this->endDate = '';
-        $this->subscriptionType = 'specified';
+        $this->subscriptionType = '';
         $this->duration = '';
     }
 }
