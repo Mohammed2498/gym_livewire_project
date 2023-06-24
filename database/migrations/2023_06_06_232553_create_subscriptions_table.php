@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreign('subscriber_id')->references('id')->on('subscribers')->onDelete('cascade');
             $table->datetime('start_date');
             $table->datetime('end_date');
+            $table->decimal('price', 8, 2)->nullable();
+            $table->decimal('remaining_payment', 8, 2)->nullable();
             $table->enum('status', ['active', 'expired']);
             $table->integer('duration')->default(1);
             $table->string('subscription_type')->default('specified');

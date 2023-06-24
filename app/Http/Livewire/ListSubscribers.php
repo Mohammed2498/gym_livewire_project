@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-
+use App\Http\Livewire\NotificationComponent;
 
 class ListSubscribers extends Component
 {
@@ -38,7 +38,7 @@ class ListSubscribers extends Component
     public $subscriptionId;
     public $search;
     public $statusFilter = 'all';
-
+    public $additionalDays;
 
     public function render()
     {
@@ -50,13 +50,22 @@ class ListSubscribers extends Component
                     $query->where('status', $this->statusFilter);
                 });
             })
-            ->paginate(10);
-        return view('livewire.list-subscribers', ['subscribers' => $subscribers])->layout('layouts.admin-layout');
+            ->paginate(20);
+
+
+        return view(
+            'livewire.list-subscribers',
+            [
+                'subscribers' => $subscribers
+            ]
+        )
+            ->layout('layouts.admin-layout');
     }
 
     public function mount()
     {
         $this->updateSubscriptionStatus();
+        $this->listeners += ['notificationReceived' => 'showNotification'];
         $this->subscribers = Subscriber::with('subscription');
     }
 
@@ -92,7 +101,7 @@ class ListSubscribers extends Component
     {
         $this->validate([
             'name' => 'required',
-            'phone' => ['required', 'numeric', 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/']// 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'phone' => ['required', 'numeric', 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'] // 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
         ]);
 
         $data = [
@@ -110,7 +119,6 @@ class ListSubscribers extends Component
         Subscriber::create($data);
         $this->resetInputFields();
         $this->dispatchBrowserEvent('hideSubscriberModal');
-
     }
 
     public function editSubscriberModal($SubscriberId)
@@ -129,7 +137,7 @@ class ListSubscribers extends Component
         $subscriber = Subscriber::findOrFail($this->editSubscriberId);
         $this->validate([
             'editSubscriberName' => 'required',
-            'editSubscriberPhone' => ['required', 'numeric',]// 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'editSubscriberPhone' => ['required', 'numeric',] // 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
         ]);
 
         $subscriber->name = $this->editSubscriberName;
@@ -282,7 +290,6 @@ class ListSubscribers extends Component
         $this->resetInputFields();
         $this->showModal = false;
         $this->dispatchBrowserEvent('subscriptionUpdatedSuccessfully');
-
     }
 
     public function deleteSubscriptionModal($subscriptionId)
@@ -290,7 +297,6 @@ class ListSubscribers extends Component
 
         $this->showModal = true;
         $this->deleteSubscriptionId = $subscriptionId;
-
         $this->dispatchBrowserEvent('deleteSubscriptionModal');
     }
 
@@ -302,6 +308,45 @@ class ListSubscribers extends Component
             $this->dispatchBrowserEvent('subscriptionDeleted');
         }
         $this->showModal = false;
+    }
+
+    public function addAdditionalDaysModal($subscriberId)
+    {
+
+        $this->showModal = true;
+        $this->subscriberId = $subscriberId;
+        $this->dispatchBrowserEvent('addDiitionalDaysModal');
+    }
+
+    public function addAdditionalDays()
+    {
+        // Validate the input
+        $this->validate([
+            'additionalDays' => 'required|integer|min:1',
+        ]);
+
+        // Get the specific subscriber
+        $subscriber = Subscriber::find($this->subscriberId);
+
+        if ($subscriber) {
+            // Get the current subscription
+            $subscription = $subscriber->subscription;
+
+            // Check if the subscription exists and is active
+            if ($subscription && $subscription->status === 'active') {
+                // Calculate the new end date by adding the additional days
+                $newEndDate = $subscription->end_date->addDays($this->additionalDays);
+
+                // Update the subscription end date and additional days
+                $subscription->end_date = $newEndDate;
+                $subscription->additional_days += $this->additionalDays;
+                $subscription->save();
+
+                // Reset the input field and close the modal
+                $this->additionalDays = null;
+                $this->dispatchBrowserEvent('additionalDaysAdded');
+            }
+        }
     }
 
     private function resetInputFields()
