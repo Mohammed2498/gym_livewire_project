@@ -37,7 +37,6 @@
 </head>
 
 <body class="vertical-layout">
-
     <!-- Start Containerbar -->
     <div id="containerbar">
         <!-- Start Leftbar -->
@@ -264,6 +263,7 @@
             <!-- End Breadcrumbbar -->
             <!-- Start Contentbar -->
             <div class="contentbar">
+
                 <!-- Start row -->
                 <div class="row">
                     {{ $slot }}
@@ -318,65 +318,64 @@
     {{-- <script src="{{asset('')}}assets/dashboard/plugins/datatables/responsive.bootstrap4.min.js"></script> --}}
     {{-- <script src="{{asset('')}}assets/dashboard/js/custom/custom-table-datatable.js"></script> --}}
     <!-- End js -->
-    @livewireScripts
+
     <script>
         // Livewire.on('subscriberAdded', function () {
         //     $('#addSubscriberModal').modal('hide');
         // });
         window.addEventListener('showSubscriberModal', event => {
             $('#addSubscriberModal').modal('show');
-        })
+        });
         window.addEventListener('hideSubscriberModal', event => {
             $('#addSubscriberModal').modal('hide');
-        })
+        });
         // deleteSubscriberModal
         window.addEventListener('deleteSubscriberModal', event => {
             $('#deleteSubscriberModal').modal('show');
-        })
+        });
         window.addEventListener('subscriberDeleted', event => {
             $('#deleteSubscriberModal').modal('hide');
-        })
+        });
 
         window.addEventListener('editSubscriberModal', event => {
             $('#editSubscriberModal').modal('show');
-        })
+        });
 
         window.addEventListener('SubscriberUpdated', event => {
             $('#editSubscriberModal').modal('hide');
-        })
+        });
 
         window.addEventListener('showAddSubscriptionModal', event => {
             $('#createSubscriptionModal').modal('show');
-        })
+        });
         window.addEventListener('subscriptionAddedSuccessfully', event => {
             $('#createSubscriptionModal').modal('hide');
-        })
+        });
         window.addEventListener('showUpdateSubscriptionModal', event => {
             $('#updateSubscriptionModal').modal('show');
-        })
+        });
 
         window.addEventListener('subscriptionUpdatedSuccessfully', event => {
             $('#updateSubscriptionModal').modal('hide');
-        })
+        });
         window.addEventListener('deleteSubscriptionModal', event => {
             $('#deleteSubscriptionModal').modal('show');
-        })
+        });
 
         window.addEventListener('subscriptionDeleted', event => {
             $('#deleteSubscriptionModal').modal('hide');
-        })
+        });
+
         window.addEventListener('addDiitionalDaysModal', event => {
             $('#addAdditionalDaysModal').modal('show');
-        })
+        });
         window.addEventListener('additionalDaysAdded', event => {
             $('#addAdditionalDaysModal').modal('hide');
-        })
-    </script>
-    <script>
-        $(document).ready(function() {
-            $('.toast').toast('show');
         });
     </script>
+    
+
+    @livewireScripts
 
 </body>
 

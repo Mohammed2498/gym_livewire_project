@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
 Route::middleware(['auth'])->name('admin.')->prefix('rock-gym/admin')->group(callback: function () {
     Route::get('/subscribers',\App\Http\Livewire\ListSubscribers::class)->name('subscribers');
     Route::get('/home',\App\Http\Livewire\SubscriberStats::class)->name('home');

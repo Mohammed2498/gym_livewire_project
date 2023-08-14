@@ -16,7 +16,6 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-
                 <table
                     class="table foo-filtering-table footable footable-2 footable-filtering footable-filtering-right breakpoint-lg"
                     data-filtering="true" style="">
@@ -48,6 +47,8 @@
                             <th data-breakpoints="xs" style="display: table-cell;">الصورة</th>
                             <th data-breakpoints="xs sm" style="display: table-cell;">تاريخ التسجيل</th>
                             <th data-breakpoints="xs sm md" style="display: table-cell;">تاريخ الانتهاء</th>
+                            <th data-breakpoints="xs sm md" style="display: table-cell;">حالة الدفع</th>
+
                             <th data-breakpoints="xs sm md" style="display: table-cell;">المدة المتبقية</th>
                             <th data-breakpoints="xs sm md" style="display: table-cell;">حالة الاشتراك</th>
                             <th data-type="html" data-breakpoints="xs sm md" class="footable-last-visible"
@@ -77,6 +78,22 @@
                                     @else
                                     @endif
                                 </td>
+                                <td>
+                                    @if ($subscriber->subscription)
+                                        @if ($subscriber->subscription->payment_status == 'full')
+                                            <span class="badge badge-pill badge-success">تم الدفع كامل</span>
+                                        @elseif($subscriber->subscription->payment_status == 'partial')
+                                            <span class="badge badge-pill badge-warning"> متبقي
+                                                {{ $subscriber->subscription->remaining_payment }}
+                                                شيكل
+                                            </span>
+                                        @else
+                                            <span class="badge badge-pill badge-danger">لم يتم الدقع</span>
+                                        @endif
+                                    @else
+                                    @endif
+                                </td>
+
                                 <td>
                                     @if ($subscriber->subscription)
                                         متبقي {{ $subscriber->subscription->remaining_duration['days'] }} يوم
@@ -129,7 +146,7 @@
                                                     x-placement="bottom-start"
                                                     style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 40px, 0px);">
                                                     <button
-                                                        wire:click="deleteSubscriptionModal({{ $subscriber->id ?? '' }})"
+                                                        wire:click="deleteSubscriptionModal({{ $subscriber->subscription->id ?? '' }})"
                                                         class="dropdown-item">
                                                         حذف الاشتراك
                                                     </button>
@@ -481,6 +498,15 @@
                                     id="customEndDate">
                             </div>
                         @endif
+                        <div class="form-group">
+                            <label for="paymentAmount">الدفع</label>
+                            <input wire:model.defer="paymentAmount" type="number"
+                                class="form-control @error('name') is-invalid @enderror" id="paymentAmount"
+                                placeholder="الدفع">
+                            @error('paymentAmount')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق</button>
                             <button type="submit" class="btn btn-primary">تجديد الاشتراك</button>
@@ -639,4 +665,7 @@
     {{--        /* Add more styles as needed */ --}}
 
     {{--    </style> --}}
+
+
+
 </div>

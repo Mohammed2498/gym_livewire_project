@@ -10,12 +10,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use App\Http\Livewire\NotificationComponent;
+use LivewireFlashy\FlashyNotifier;
 
 class ListSubscribers extends Component
 {
     use WithPagination;
     use WithFileUploads;
-
     protected $subscribers;
     public $name;
     public $image;
@@ -40,6 +40,10 @@ class ListSubscribers extends Component
     public $statusFilter = 'all';
     public $additionalDays;
 
+    public $paymentAmount;
+    public $paymentStatus;
+    public $remainingPayment;
+
     public function render()
     {
         $subscribers = Subscriber::with('subscription')
@@ -55,11 +59,8 @@ class ListSubscribers extends Component
 
         return view(
             'livewire.list-subscribers',
-            [
-                'subscribers' => $subscribers
-            ]
-        )
-            ->layout('layouts.admin-layout');
+            ['subscribers' => $subscribers]
+        )->layout('layouts.admin-layout');
     }
 
     public function mount()
@@ -67,6 +68,9 @@ class ListSubscribers extends Component
         $this->updateSubscriptionStatus();
         $this->listeners += ['notificationReceived' => 'showNotification'];
         $this->subscribers = Subscriber::with('subscription');
+
+
+
     }
 
     public function updateSubscriptionStatus()
@@ -81,6 +85,7 @@ class ListSubscribers extends Component
 
     public function addNewSubscriber()
     {
+
         $this->showModal = false;
         $this->resetInputFields();
         $this->dispatchBrowserEvent('showSubscriberModal');
@@ -119,6 +124,10 @@ class ListSubscribers extends Component
         Subscriber::create($data);
         $this->resetInputFields();
         $this->dispatchBrowserEvent('hideSubscriberModal');
+        $this->dispatchBrowserEvent('toastrMessage', [
+            'type' => 'success',
+            'message' => 'Subscriber Added Successfully',
+        ]);
     }
 
     public function editSubscriberModal($SubscriberId)
@@ -193,6 +202,7 @@ class ListSubscribers extends Component
             'subscriberId' => 'required',
             'subscriptionType' => 'required',
             'duration' => 'required_if:subscriptionType,specified|integer|min:1',
+
         ]);
 
         if ($this->subscriptionType === 'specified') {
@@ -211,11 +221,29 @@ class ListSubscribers extends Component
             'end_date' => $endDate,
             'status' => $status,
             'subscription_type' => $this->subscriptionType,
+            'price' => 20.00,
         ];
 
         if ($this->subscriptionType === 'specified') {
             $subscriptionData['duration'] = $this->duration;
         }
+            // Add payment handling logic
+            if ($this->paymentAmount == $subscriptionData['price']) {
+                $this->paymentStatus = 'full';
+            }
+            elseif ($this->paymentAmount > 0) {
+                $this->paymentStatus = 'partial';
+            }
+             else {
+                $this->paymentStatus = 'not_paid';
+            }
+
+            $remainingPayment = $subscriptionData['price'] - $this->paymentAmount; // Calculate remaining payment
+            $subscriptionData['payment_amount'] = $this->paymentAmount;
+            $subscriptionData['payment_status'] = $this->paymentStatus;
+            $subscriptionData['remaining_payment'] = $remainingPayment;
+
+
         Subscription::create($subscriptionData);
 
         $this->resetInputFields();
@@ -340,7 +368,9 @@ class ListSubscribers extends Component
                 // Update the subscription end date and additional days
                 $subscription->end_date = $newEndDate;
                 $subscription->additional_days += $this->additionalDays;
+
                 $subscription->save();
+
 
                 // Reset the input field and close the modal
                 $this->additionalDays = null;
