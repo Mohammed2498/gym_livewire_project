@@ -372,8 +372,13 @@
         window.addEventListener('additionalDaysAdded', event => {
             $('#addAdditionalDaysModal').modal('hide');
         });
+        window.addEventListener('updatePaymentAmountModal', event => {
+            $('#updatePaymentAmountModal').modal('show');
+        });
+        window.addEventListener('paymentUpdatedSuccessfully', event => {
+            $('#updatePaymentAmountModal').modal('hide');
+        });
     </script>
-    
 
     @livewireScripts
 

@@ -39,7 +39,7 @@ class ListSubscribers extends Component
     public $search;
     public $statusFilter = 'all';
     public $additionalDays;
-
+    public $updatedPayment;
     public $paymentAmount;
     public $paymentStatus;
     public $remainingPayment;
@@ -301,6 +301,18 @@ class ListSubscribers extends Component
         $subscription->start_date = $startDate;
         $subscription->end_date = $endDate;
 
+        $subscription->payment_amount = $this->updatedPayment;
+
+        if ($this->updatedPayment == $subscription->price) {
+            $subscription->payment_status = 'full';
+            $subscription->remaining_payment = 0;
+        } elseif ($this->updatedPayment > 0) {
+            $subscription->payment_status = 'partial';
+            $subscription->remaining_payment = $subscription->price - $this->updatedPayment;
+        } else {
+            $subscription->payment_status = 'not_paid';
+            $subscription->remaining_payment = $this->updatedPayment;
+        }
 
         if ($this->subscriptionType === 'specified') {
             $subscription->duration = $this->duration;
@@ -320,6 +332,40 @@ class ListSubscribers extends Component
         $this->dispatchBrowserEvent('subscriptionUpdatedSuccessfully');
     }
 
+    public function updatePaymentAmountModal($subscriberId){
+        $this->showModal = true;
+        $this->subscriberId = $subscriberId;
+        $this->dispatchBrowserEvent('updatePaymentAmountModal');
+    }
+
+    public function updatePaymentAmount(){
+
+        $this->validate([
+            'updatedPayment' => 'numeric',
+        ]);
+
+        $subscriber = Subscriber::find($this->subscriberId);
+
+        $subscription = $subscriber->subscription;
+        $subscription->payment_amount = $this->updatedPayment;
+
+        if ($this->updatedPayment == $subscription->price) {
+            $subscription->payment_status = 'full';
+            $subscription->remaining_payment=0;
+        } elseif ($this->updatedPayment > 0) {
+            $subscription->payment_status = 'partial';
+            $subscription->remaining_payment=$subscription->price - $this->updatedPayment;
+        } else {
+            $subscription->payment_status = 'not_paid';
+            $subscription->remaining_payment=$this->updatedPayment;
+        }
+
+        $subscription->save();
+
+        $this->updatedPayment = null;
+        $this->dispatchBrowserEvent('paymentUpdatedSuccessfully');
+    }
+
     public function deleteSubscriptionModal($subscriptionId)
     {
 
@@ -327,6 +373,7 @@ class ListSubscribers extends Component
         $this->deleteSubscriptionId = $subscriptionId;
         $this->dispatchBrowserEvent('deleteSubscriptionModal');
     }
+
 
     public function deleteSubscription()
     {

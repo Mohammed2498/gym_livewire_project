@@ -83,12 +83,15 @@
                                         @if ($subscriber->subscription->payment_status == 'full')
                                             <span class="badge badge-pill badge-success">تم الدفع كامل</span>
                                         @elseif($subscriber->subscription->payment_status == 'partial')
-                                            <span class="badge badge-pill badge-warning"> متبقي
+                                            <span class="badge badge-pill badge-warning"
+                                                wire:click="updatePaymentAmountModal({{ $subscriber->id }})"> متبقي
                                                 {{ $subscriber->subscription->remaining_payment }}
                                                 شيكل
                                             </span>
                                         @else
-                                            <span class="badge badge-pill badge-danger">لم يتم الدقع</span>
+                                            <span class="badge badge-pill badge-danger"
+                                                wire:click="updatePaymentAmountModal({{ $subscriber->id }})">لم يتم
+                                                الدقع</span>
                                         @endif
                                     @else
                                     @endif
@@ -447,7 +450,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleLargeModalLabel">
-                        اضافاة اشتراك </h5>
+                        اضافة اشتراك </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
                         wire:click="closeModal">
                         <span aria-hidden="true">×</span>
@@ -574,6 +577,15 @@
                                     id="customEndDate">
                             </div>
                         @endif
+                        <div class="form-group">
+                            <label for="updatedPayment">الدفع</label>
+                            <input wire:model.defer="updatedPayment" type="number"
+                                class="form-control @error('name') is-invalid @enderror" id="updatedPayment"
+                                placeholder="الدفع">
+                            @error('updatedPayment')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق</button>
                             <button type="submit" class="btn btn-primary">تجديد الاشتراك</button>
@@ -629,7 +641,37 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق
                             </button>
-                            <button wire:click="deleteSubscription" class="btn btn-primary"> تأكيد
+                            <button class="btn btn-primary"> تأكيد
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{--    UpdatePayment Amount Modal --}}
+    <div wire:ignore.self class="modal fade bd-example-modal-lg show" id="updatePaymentAmountModal" tabindex="-1"
+        role="dialog" aria-labelledby="addSubscriberModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleLargeModalLabel">تحديث قيمة الدفع<:< /h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                                wire:click="closeModal">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                </div>
+                <div class="modal-body">
+                    <form wire:submit.prevent="updatePaymentAmount">
+                        <div class="form-group">
+                            <label for="updatedPayment">تحديث قيمة الدفع</label>
+                            <input type="number" wire:model.defer="updatedPayment" class="form-control"
+                                id="updatedPayment">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق
+                            </button>
+                            <button class="btn btn-primary"> تأكيد
                             </button>
                         </div>
                     </form>
