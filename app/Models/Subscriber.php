@@ -12,7 +12,7 @@ class Subscriber extends Model
     use HasFactory;
 
     protected $table = 'subscribers';
-    protected $fillable = ['name', 'image', 'phone'];
+    protected $fillable = ['name', 'image', 'phone','gender'];
 
     public function subscription()
     {

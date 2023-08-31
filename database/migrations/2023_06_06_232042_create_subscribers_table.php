@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('image')->nullable();
             $table->string('phone');
+            $table->enum('gender', ['male', 'female']);
             $table->timestamps();
         });
     }

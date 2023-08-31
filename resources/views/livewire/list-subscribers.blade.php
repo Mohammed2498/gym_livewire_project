@@ -32,6 +32,16 @@
                                     </select>
                                 </div>
                             </th>
+                            <th colspan="2">
+                                <div class="form-group">
+                                    <label for="status-filter" class="mr-1"> نوع المشتركين:</label>
+                                    <select class="form-control" wire:model="genderFilter" id="status-filter">
+                                        <option value="all">الكل</option>
+                                        <option value="male"> الذكور</option>
+                                        <option value="female"> الاناث</option>
+                                    </select>
+                                </div>
+                            </th>
                             <th colspan="3">
                                 <div class="form-group">
                                     <input type="text" class="form-control" placeholder="البحث"
@@ -357,6 +367,19 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="form-group">
+                            <label for="gender">الجنس</label>
+                            <select wire:model="gender" class="form-control @error('gender') is-invalid @enderror"
+                                id="gender">
+                                <option selected>اختر الجنس</option>
+                                <option value="male">ذكر</option>
+                                <option value="female">أنثى</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                            @error('gender')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 wire:click="closeModal">اغلاق
@@ -405,6 +428,19 @@
                             <label for="image">Image</label>
                             <input wire:model="image" type="file" class="form-control file" id="image">
                             @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">الجنس</label>
+                            <select wire:model="gender" class="form-control @error('gender') is-invalid @enderror"
+                                id="gender">
+                                <option>اختر الجنس</option>
+                                <option value="male">ذكر</option>
+                                <option value="female">أنثى</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                            @error('gender')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

@@ -20,6 +20,8 @@ class ListSubscribers extends Component
     public $name;
     public $image;
     public $phone;
+    public $gender;
+
     public $subscriber;
     public $subscriberId;
     public $editSubscriberId;
@@ -43,17 +45,22 @@ class ListSubscribers extends Component
     public $paymentAmount;
     public $paymentStatus;
     public $remainingPayment;
+    public $genderFilter = 'all'; // Default value is 'all'
 
     public function render()
     {
         $subscribers = Subscriber::with('subscription')
             ->when($this->search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->when($this->genderFilter !== 'all', function ($query) {
+                $query->where('gender', $this->genderFilter);
             })->when($this->statusFilter !== 'all', function ($query) {
                 $query->whereHas('subscription', function ($query) {
                     $query->where('status', $this->statusFilter);
                 });
             })
+
             ->paginate(20);
 
 
@@ -106,12 +113,14 @@ class ListSubscribers extends Component
     {
         $this->validate([
             'name' => 'required',
-            'phone' => ['required', 'numeric', 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'] // 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'phone' => ['required', 'numeric', 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'], // 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'gender' => 'required',
         ]);
 
         $data = [
             'name' => $this->name,
             'phone' => $this->phone,
+            'gender'=>$this->gender
         ];
 
         if ($this->image) {
@@ -146,12 +155,13 @@ class ListSubscribers extends Component
         $subscriber = Subscriber::findOrFail($this->editSubscriberId);
         $this->validate([
             'editSubscriberName' => 'required',
-            'editSubscriberPhone' => ['required', 'numeric',] // 'digits_between:10,10', 'regex:/^(056|059)\d{7}$/'
+            'editSubscriberPhone' => ['required', 'numeric',],
+            'gender' => 'required',
         ]);
 
         $subscriber->name = $this->editSubscriberName;
         $subscriber->phone = $this->editSubscriberPhone;
-
+        $subscriber->gender=$this->gender;
 
         if ($this->image) {
             if ($subscriber->image !== "users-image.jpg") {
@@ -435,5 +445,6 @@ class ListSubscribers extends Component
         $this->endDate = '';
         $this->subscriptionType = '';
         $this->duration = '';
+        $this->gender = null;
     }
 }
