@@ -11,7 +11,7 @@ class Subscription extends Model
 
     use HasFactory;
     protected $table = 'subscriptions';
-    protected $fillable = ['subscriber_id', 'end_date', 'start_date', 'status', 'duration', 'subscription_type','price','payment_amount','payment_status','remaining_payment'];
+    protected $fillable = ['subscriber_id', 'end_date', 'start_date', 'status', 'duration', 'subscription_type','subscription_price','payment_amount','payment_status','remaining_payment','modify_days'];
     protected $dates = ['start_date', 'end_date'];
 
     public function subscriber()

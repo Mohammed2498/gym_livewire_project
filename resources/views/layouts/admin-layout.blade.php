@@ -319,6 +319,7 @@
     {{-- <script src="{{asset('')}}assets/dashboard/js/custom/custom-table-datatable.js"></script> --}}
     <!-- End js -->
 
+
     <script>
         // Livewire.on('subscriberAdded', function () {
         //     $('#addSubscriberModal').modal('hide');
@@ -381,7 +382,6 @@
     </script>
 
     @livewireScripts
-
 </body>
 
 </html>

@@ -6,6 +6,7 @@
         </button>
     </div>
 </x-slot>
+
 <x-slot:pageHeader>
     المشتركون
 </x-slot:pageHeader>
@@ -207,10 +208,10 @@
                         @endif
                     </ul>
                 </nav>
-
             </div>
         </div>
     </div>
+
     {{--    <div class="card m-b-30"> --}}
     {{--        <div class="card-header"> --}}
     {{--            <h5 class="card-title">المشتركون</h5> --}}
@@ -328,6 +329,8 @@
     {{--            </div> --}}
     {{--        </div> --}}
     {{--    </div> --}}
+
+
     {{--    Add Subscriber Modal --}}
     <div wire:ignore.self class="modal fade bd-example-modal-lg show" id="addSubscriberModal" tabindex="-1"
         role="dialog" aria-labelledby="addSubscriberModalLabel" aria-hidden="true">
@@ -498,54 +501,54 @@
                             <input type="hidden" wire:model="subscriberId" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="subscriptionType">نوع الاشتراك:</label>
-                            <select wire:model="subscriptionType" class="form-control" id="subscriptionType">
-                                <option value="" selected>اختر نوع الاشتراك</option>
-                                <option value="specified">بالأشهر:</option>
-                                <option value="custom">مخصص:</option>
+                            <label for="duration">المدة</label>
+                            <select wire:model="duration" wire:change="calculateTotalPrice"
+                                class="form-control @error('duration') is-invalid @enderror" id="duration">
+                                <option selected>اختر المدة</option>
+                                <option value="1">شهر</option>
+                                <option value="2">شهرين</option>
+                                <option value="3">3 أشهر</option>
+                                <option value="4">4 أشهر</option>
+                                <option value="5">5 أشهر</option>
+                                <option value="6">6 أشهر</option>
+                                <option value="7">7 أشهر</option>
+                                <option value="8">8 أشهر</option>
+                                <option value="9">9 أشهر</option>
+                                <option value="10">10 أشهر</option>
+                                <option value="11">11 شهر</option>
+                                <option value="12"> سنة</option>
+                                <!-- Add more options as needed -->
                             </select>
-                        </div>
-                        @if ($subscriptionType === 'specified')
-                            <div class="form-group">
-                                <label for="duration">المدة</label>
-                                <select wire:model="duration" class="form-control" id="duration">
-                                    <option selected>اختر المدة</option>
-                                    <option value="1">شهر</option>
-                                    <option value="2">شهرين</option>
-                                    <option value="3">3 أشهر</option>
-                                    <option value="4">4 أشهر</option>
-                                    <option value="5">5 أشهر</option>
-                                    <option value="6">6 أشهر</option>
-                                    <option value="7">7 أشهر</option>
-                                    <option value="8">8 أشهر</option>
-                                    <option value="9">9 أشهر</option>
-                                    <option value="10">10 أشهر</option>
-                                    <option value="11">11 شهر</option>
-                                    <option value="12"> سنة</option>
-                                    <!-- Add more options as needed -->
-                                </select>
-                            </div>
-                        @elseif ($subscriptionType === 'custom')
-                            <div class="form-group">
-                                <label for="customStartDate">تاريخ الاشتراك:</label>
-                                <input type="date" wire:model="customStartDate" class="form-control"
-                                    id="customStartDate">
-                            </div>
-                            <div class="form-group">
-                                <label for="customEndDate">تاريخ نهاية الاشتراك:</label>
-                                <input type="date" wire:model="customEndDate" class="form-control"
-                                    id="customEndDate">
-                            </div>
-                        @endif
-                        <div class="form-group">
-                            <label for="paymentAmount">الدفع</label>
-                            <input wire:model.defer="paymentAmount" type="number"
-                                class="form-control @error('name') is-invalid @enderror" id="paymentAmount"
-                                placeholder="الدفع">
-                            @error('paymentAmount')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            @error('duration')
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                        <div class="form-group">
+                            <label>السعر الاجمالي:</label>
+                            <p class="form-control-static">شيكل {{ $subscriptionPrice }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentStatus">الدفع</label>
+                            <select wire:model="paymentStatus"
+                                class="form-control @error('paymentStatus') is-invalid @enderror" id="paymentStatus">
+                                <option value="full">كامل</option>
+                                <option value="partial">جزئي</option>
+                                <option value="not_paid">لاحقا</option>
+                            </select>
+                            @error('paymentStatus')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        @if ($paymentStatus === 'partial')
+                            <div class="form-group">
+                                <label for="paymentAmount">قيمة الدفعة:</label>
+                                <input wire:model="paymentAmount" type="number" id="paymentAmount"
+                                    class="form-control @error('paymentAmount') is-invalid @enderror">
+                                @error('paymentAmount')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        @endif
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق</button>
                             <button type="submit" class="btn btn-primary">تجديد الاشتراك</button>
@@ -574,54 +577,51 @@
                             <input type="hidden" wire:model="subscriberId" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="subscriptionType">نوع الاشتراك:</label>
-                            <select wire:model="subscriptionType" class="form-control" id="subscriptionType">
-                                <option value="" selected>اختر نوع الاشتراك</option>
-                                <option value="specified">بالأشهر:</option>
-                                <option value="custom">مخصص:</option>
+                            <label for="duration">المدة</label>
+                            <select wire:change="calculateTotalPrice" wire:model="duration" class="form-control"
+                                id="duration">
+                                <option selected>اختر المدة</option>
+                                <option value="1">شهر</option>
+                                <option value="2">شهرين</option>
+                                <option value="3">3 أشهر</option>
+                                <option value="4">4 أشهر</option>
+                                <option value="5">5 أشهر</option>
+                                <option value="6">6 أشهر</option>
+                                <option value="7">7 أشهر</option>
+                                <option value="8">8 أشهر</option>
+                                <option value="9">9 أشهر</option>
+                                <option value="10">10 أشهر</option>
+                                <option value="11">11 شهر</option>
+                                <option value="12"> سنة</option>
+                                <!-- Add more options as needed -->
                             </select>
                         </div>
-                        @if ($subscriptionType === 'specified')
-                            <div class="form-group">
-                                <label for="duration">المدة</label>
-                                <select wire:model="duration" class="form-control" id="duration">
-                                    <option selected>اختر المدة</option>
-                                    <option value="1">شهر</option>
-                                    <option value="2">شهرين</option>
-                                    <option value="3">3 أشهر</option>
-                                    <option value="4">4 أشهر</option>
-                                    <option value="5">5 أشهر</option>
-                                    <option value="6">6 أشهر</option>
-                                    <option value="7">7 أشهر</option>
-                                    <option value="8">8 أشهر</option>
-                                    <option value="9">9 أشهر</option>
-                                    <option value="10">10 أشهر</option>
-                                    <option value="11">11 شهر</option>
-                                    <option value="12"> سنة</option>
-                                    <!-- Add more options as needed -->
-                                </select>
-                            </div>
-                        @elseif ($subscriptionType === 'custom')
-                            <div class="form-group">
-                                <label for="customStartDate">تاريخ الاشتراك:</label>
-                                <input type="date" wire:model="customStartDate" class="form-control"
-                                    id="customStartDate">
-                            </div>
-                            <div class="form-group">
-                                <label for="customEndDate">تاريخ نهاية الاشتراك:</label>
-                                <input type="date" wire:model="customEndDate" class="form-control"
-                                    id="customEndDate">
-                            </div>
-                        @endif
                         <div class="form-group">
-                            <label for="updatedPayment">الدفع</label>
-                            <input wire:model.defer="updatedPayment" type="number"
-                                class="form-control @error('name') is-invalid @enderror" id="updatedPayment"
-                                placeholder="الدفع">
-                            @error('updatedPayment')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <label>السعر الاجمالي:</label>
+                            <p class="form-control-static">شيكل {{ $subscriptionPrice }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentStatus">الدفع</label>
+                            <select wire:model="paymentStatus"
+                                class="form-control @error('paymentStatus') is-invalid @enderror" id="paymentStatus">
+                                <option value="full">كامل</option>
+                                <option value="partial">جزئي</option>
+                                <option value="not_paid">لاحقا</option>
+                            </select>
+                            @error('paymentStatus')
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                        @if ($paymentStatus === 'partial')
+                            <div class="form-group">
+                                <label for="paymentAmount">قيمة الدفعة:</label>
+                                <input wire:model="paymentAmount" type="number" id="paymentAmount"
+                                    class="form-control @error('paymentAmount') is-invalid @enderror">
+                                @error('paymentAmount')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        @endif
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق</button>
                             <button type="submit" class="btn btn-primary">تجديد الاشتراك</button>
@@ -661,18 +661,18 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleLargeModalLabel">زيادة مدة الاشتراك:</h5>
+                    <h5 class="modal-title" id="exampleLargeModalLabel">تعديل مدة الاشتراك بالأيام:</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
                         wire:click="closeModal">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form wire:submit.prevent="addAdditionalDays">
+                    <form wire:submit.prevent="updateSubscriptionDays">
                         <div class="form-group">
-                            <label for="additionalDays">زيادة مدة الاشتراك (بالأيام):</label>
-                            <input type="number" wire:model.defer="additionalDays" class="form-control"
-                                id="additionalDays">
+                            <label for="subscriptionDays">تعديل مدة الاشتراك بالأيام:</label>
+                            <input wire:model="subscriptionDays" type="number" id="subscriptionDays"
+                                class="form-control">
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">اغلاق
@@ -691,17 +691,18 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleLargeModalLabel">تحديث قيمة الدفع<:< /h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                                wire:click="closeModal">
-                                <span aria-hidden="true">×</span>
-                            </button>
+                    <h5 class="modal-title" id="exampleLargeModalLabel">تحديث قيمة الدفع: </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                        wire:click="closeModal">
+                        <span aria-hidden="true">×</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updatePaymentAmount">
+
                         <div class="form-group">
-                            <label for="updatedPayment">تحديث قيمة الدفع</label>
-                            <input type="number" wire:model.defer="updatedPayment" class="form-control"
+                            <label for="updatedPayment">قيمة الدفع</label>
+                            <input wire:model="updatedPayment" type="number" class="form-control"
                                 id="updatedPayment">
                         </div>
                         <div class="modal-footer">

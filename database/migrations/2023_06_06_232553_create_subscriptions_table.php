@@ -17,13 +17,13 @@ return new class extends Migration
             $table->foreign('subscriber_id')->references('id')->on('subscribers')->onDelete('cascade');
             $table->datetime('start_date');
             $table->datetime('end_date');
-            $table->integer('price')->default(20);
+            $table->decimal('subscription_price', 8, 2);
             $table->integer('payment_amount');
-            $table->string('payment_status');
+            $table->enum('payment_status', ['full', 'partial', 'not_paid']);
             $table->string('remaining_payment');
             $table->enum('status', ['active', 'expired']);
             $table->integer('duration')->default(1);
-            $table->string('subscription_type')->default('specified');
+            $table->integer('modify_days')->nullable();
             $table->timestamps();
         });
     }

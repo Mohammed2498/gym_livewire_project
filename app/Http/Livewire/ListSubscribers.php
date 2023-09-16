@@ -16,12 +16,12 @@ class ListSubscribers extends Component
 {
     use WithPagination;
     use WithFileUploads;
+
     protected $subscribers;
     public $name;
     public $image;
     public $phone;
     public $gender;
-
     public $subscriber;
     public $subscriberId;
     public $editSubscriberId;
@@ -29,23 +29,24 @@ class ListSubscribers extends Component
     public $editSubscriberPhone;
     public $deleteSubscriberId;
     public $showModal = false;
-    public $subscriptionType;
     public $duration;
     public $startDate;
     public $endDate;
     public $status;
-    public $customStartDate;
-    public $customEndDate;
     public $deleteSubscriptionId;
     public $subscriptionId;
     public $search;
     public $statusFilter = 'all';
-    public $additionalDays;
+    public $subscriptionDays = 0;
     public $updatedPayment;
     public $paymentAmount;
-    public $paymentStatus;
+    public $paymentStatus = 'full';
     public $remainingPayment;
     public $genderFilter = 'all'; // Default value is 'all'
+    public $price;
+    public $subscriptionPrice;
+
+
 
     public function render()
     {
@@ -60,7 +61,6 @@ class ListSubscribers extends Component
                     $query->where('status', $this->statusFilter);
                 });
             })
-
             ->paginate(20);
 
 
@@ -73,11 +73,7 @@ class ListSubscribers extends Component
     public function mount()
     {
         $this->updateSubscriptionStatus();
-        $this->listeners += ['notificationReceived' => 'showNotification'];
-        $this->subscribers = Subscriber::with('subscription');
-
-
-
+        $this->subscribers = Subscriber::with('subscription')->get();
     }
 
     public function updateSubscriptionStatus()
@@ -117,10 +113,14 @@ class ListSubscribers extends Component
             'gender' => 'required',
         ]);
 
+        // Determine the default subscription price based on gender
+        $this->price = $this->gender === 'male' ? 20.00 : ($this->gender === 'female' ? 30.00 : 0.00);
+
         $data = [
             'name' => $this->name,
             'phone' => $this->phone,
-            'gender'=>$this->gender
+            'gender' => $this->gender,
+            'price' => $this->price
         ];
 
         if ($this->image) {
@@ -133,10 +133,6 @@ class ListSubscribers extends Component
         Subscriber::create($data);
         $this->resetInputFields();
         $this->dispatchBrowserEvent('hideSubscriberModal');
-        $this->dispatchBrowserEvent('toastrMessage', [
-            'type' => 'success',
-            'message' => 'Subscriber Added Successfully',
-        ]);
     }
 
     public function editSubscriberModal($SubscriberId)
@@ -158,10 +154,12 @@ class ListSubscribers extends Component
             'editSubscriberPhone' => ['required', 'numeric',],
             'gender' => 'required',
         ]);
+        $price = $this->gender === 'male' ? 20.00 : ($this->gender === 'female' ? 30.00 : 0.00);
 
+        $subscriber->price = $price;
         $subscriber->name = $this->editSubscriberName;
         $subscriber->phone = $this->editSubscriberPhone;
-        $subscriber->gender=$this->gender;
+        $subscriber->gender = $this->gender;
 
         if ($this->image) {
             if ($subscriber->image !== "users-image.jpg") {
@@ -199,29 +197,26 @@ class ListSubscribers extends Component
     {
         $this->resetValidation();
         $this->subscriberId = $subscriberId;
-        $this->subscriptionType = 'specified';
-        $this->customStartDate = date('Y-m-d');
-        $this->customEndDate = date('Y-m-d', strtotime('+1 month'));
         $this->resetInputFields();
         $this->dispatchBrowserEvent('showAddSubscriptionModal');
     }
 
     public function storeSubscription()
     {
+
         $this->validate([
             'subscriberId' => 'required',
-            'subscriptionType' => 'required',
             'duration' => 'required_if:subscriptionType,specified|integer|min:1',
-
+            'paymentStatus' => 'required|in:full,partial,not_paid',
         ]);
 
-        if ($this->subscriptionType === 'specified') {
-            $startDate = Carbon::now();
-            $endDate = $startDate->copy()->addMonths($this->duration);
-        } else {
-            $startDate = $this->customStartDate;
-            $endDate = $this->customEndDate;
-        }
+        $subscriber = Subscriber::findOrFail($this->subscriberId);
+        $defaultSubscriptionPrice = $subscriber->price;
+
+
+        $startDate = Carbon::now();
+        $endDate = $startDate->copy()->addMonths($this->duration);
+        $this->subscriptionPrice = $defaultSubscriptionPrice * $this->duration;
 
         $status = now()->greaterThanOrEqualTo($endDate) ? 'expired' : 'active';
 
@@ -230,29 +225,25 @@ class ListSubscribers extends Component
             'start_date' => $startDate,
             'end_date' => $endDate,
             'status' => $status,
-            'subscription_type' => $this->subscriptionType,
-            'price' => 20.00,
+            'subscription_price' => $this->subscriptionPrice,
+            'duration' => $this->duration,
         ];
 
-        if ($this->subscriptionType === 'specified') {
-            $subscriptionData['duration'] = $this->duration;
+
+        if ($this->paymentStatus === 'full') {
+            $this->paymentAmount = $this->subscriptionPrice;
+            $this->remainingPayment = 0;
+        } elseif ($this->paymentStatus === 'partial') {
+            $this->paymentAmount = $this->paymentAmount;
+            $this->remainingPayment = $this->subscriptionPrice - $this->paymentAmount;
+        } elseif ($this->paymentStatus === 'not_paid') {
+            $this->paymentAmount = 0;
+            $this->remainingPayment = $this->subscriptionPrice;
         }
-            // Add payment handling logic
-            if ($this->paymentAmount == $subscriptionData['price']) {
-                $this->paymentStatus = 'full';
-            }
-            elseif ($this->paymentAmount > 0) {
-                $this->paymentStatus = 'partial';
-            }
-             else {
-                $this->paymentStatus = 'not_paid';
-            }
 
-            $remainingPayment = $subscriptionData['price'] - $this->paymentAmount; // Calculate remaining payment
-            $subscriptionData['payment_amount'] = $this->paymentAmount;
-            $subscriptionData['payment_status'] = $this->paymentStatus;
-            $subscriptionData['remaining_payment'] = $remainingPayment;
-
+        $subscriptionData['payment_status'] = $this->paymentStatus;
+        $subscriptionData['payment_amount'] =  $this->paymentAmount;
+        $subscriptionData['remaining_payment'] =  $this->remainingPayment;
 
         Subscription::create($subscriptionData);
 
@@ -267,12 +258,22 @@ class ListSubscribers extends Component
         }
     }
 
+    public function calculateTotalPrice()
+    {
+        // Validate the duration input if needed
+        $this->validate([
+            'duration' => 'integer|min:1',
+        ]);
+
+        // Calculate the subscription price based on the selected duration
+        $subscriber = Subscriber::findOrFail($this->subscriberId);
+        $defaultSubscriptionPrice = $subscriber->price;
+        $this->subscriptionPrice = $defaultSubscriptionPrice * $this->duration;
+    }
+
     public function updateSubscriptionModal($subscriberId)
     {
         $this->subscriberId = $subscriberId;
-        $this->subscriptionType = 'specified';
-        $this->customStartDate = date('Y-m-d');
-        $this->customEndDate = date('Y-m-d', strtotime('+1 month'));
         $this->resetInputFields();
         $this->dispatchBrowserEvent('showUpdateSubscriptionModal');
     }
@@ -281,11 +282,11 @@ class ListSubscribers extends Component
     {
         $this->validate([
             'subscriberId' => 'required',
-            'subscriptionType' => 'required',
             'duration' => 'required_if:subscriptionType,specified|integer|min:1',
         ]);
 
         $subscriber = Subscriber::find($this->subscriberId);
+        $defaultSubscriptionPrice = $subscriber->price;
         if (!$subscriber) {
             // Handle error: Subscriber not found
             return;
@@ -296,14 +297,11 @@ class ListSubscribers extends Component
             // Handle error: Subscription not found
             return;
         }
-        if ($this->subscriptionType === 'specified') {
-            $startDate = Carbon::now();
-            $endDate = $startDate->copy()->addMonths($this->duration);
-        } else {
-            // Use the custom start and end dates
-            $startDate = $this->customStartDate;
-            $endDate = $this->customEndDate;
-        }
+
+        $startDate = Carbon::now();
+        $endDate = $startDate->copy()->addMonths($this->duration);
+        $this->subscriptionPrice = $defaultSubscriptionPrice * $this->duration;
+
 
         $status = now()->greaterThanOrEqualTo($endDate) ? 'expired' : 'active';
 
@@ -313,22 +311,24 @@ class ListSubscribers extends Component
 
         $subscription->payment_amount = $this->updatedPayment;
 
-        if ($this->updatedPayment == $subscription->price) {
-            $subscription->payment_status = 'full';
-            $subscription->remaining_payment = 0;
-        } elseif ($this->updatedPayment > 0) {
-            $subscription->payment_status = 'partial';
-            $subscription->remaining_payment = $subscription->price - $this->updatedPayment;
-        } else {
-            $subscription->payment_status = 'not_paid';
-            $subscription->remaining_payment = $this->updatedPayment;
+        if ($this->paymentStatus === 'full') {
+            $this->paymentAmount = $this->subscriptionPrice;
+            $this->remainingPayment = 0;
+        } elseif ($this->paymentStatus === 'partial') {
+            $this->paymentAmount = $this->paymentAmount;
+            $this->remainingPayment = $this->subscriptionPrice - $this->paymentAmount;
+        } elseif ($this->paymentStatus === 'not_paid') {
+            $this->paymentAmount = 0;
+            $this->remainingPayment = $this->subscriptionPrice;
         }
 
-        if ($this->subscriptionType === 'specified') {
-            $subscription->duration = $this->duration;
-        } else {
-            $subscription->duration = 1;
-        }
+
+
+        $subscription->duration = $this->duration;
+        $subscription->payment_amount = $this->paymentAmount;
+        $subscription->remaining_payment = $this->remainingPayment;
+        $subscription->subscription_price = $this->subscriptionPrice;
+        $subscription->payment_status = $this->paymentStatus;
 
         $subscription->save();
 
@@ -342,14 +342,15 @@ class ListSubscribers extends Component
         $this->dispatchBrowserEvent('subscriptionUpdatedSuccessfully');
     }
 
-    public function updatePaymentAmountModal($subscriberId){
+    public function updatePaymentAmountModal($subscriberId)
+    {
         $this->showModal = true;
         $this->subscriberId = $subscriberId;
         $this->dispatchBrowserEvent('updatePaymentAmountModal');
     }
 
-    public function updatePaymentAmount(){
-
+    public function updatePaymentAmount()
+    {
         $this->validate([
             'updatedPayment' => 'numeric',
         ]);
@@ -357,20 +358,25 @@ class ListSubscribers extends Component
         $subscriber = Subscriber::find($this->subscriberId);
 
         $subscription = $subscriber->subscription;
-        $subscription->payment_amount = $this->updatedPayment;
+        $remainingPayment = $subscription->remaining_payment;
 
-        if ($this->updatedPayment == $subscription->price) {
+        // Calculate the new remaining payment
+        $newRemainingPayment = $remainingPayment - $this->updatedPayment;
+
+        // Update the payment amount and payment status
+        $subscription->payment_amount += $this->updatedPayment;
+
+        if ($newRemainingPayment === 0) {
             $subscription->payment_status = 'full';
-            $subscription->remaining_payment=0;
-        } elseif ($this->updatedPayment > 0) {
-            $subscription->payment_status = 'partial';
-            $subscription->remaining_payment=$subscription->price - $this->updatedPayment;
         } else {
-            $subscription->payment_status = 'not_paid';
-            $subscription->remaining_payment=$this->updatedPayment;
+            $subscription->payment_status = 'partial';
         }
 
+        $subscription->remaining_payment = $newRemainingPayment;
         $subscription->save();
+
+        // Update the Livewire property for displaying the remaining payment
+        $this->remainingPayment = $newRemainingPayment;
 
         $this->updatedPayment = null;
         $this->dispatchBrowserEvent('paymentUpdatedSuccessfully');
@@ -403,39 +409,32 @@ class ListSubscribers extends Component
         $this->dispatchBrowserEvent('addDiitionalDaysModal');
     }
 
-    public function addAdditionalDays()
+    public function updateSubscriptionDays()
     {
-        // Validate the input
+
         $this->validate([
-            'additionalDays' => 'required|integer|min:1',
+            'subscriptionDays' => 'integer',
         ]);
+        $subscription = Subscription::find($this->subscriberId);
 
-        // Get the specific subscriber
-        $subscriber = Subscriber::find($this->subscriberId);
+        $endDate = Carbon::parse($subscription->end_date);
 
-        if ($subscriber) {
-            // Get the current subscription
-            $subscription = $subscriber->subscription;
+        $endDate->addDays($this->subscriptionDays);
 
-            // Check if the subscription exists and is active
-            if ($subscription && $subscription->status === 'active') {
-                // Calculate the new end date by adding the additional days
-                $newEndDate = $subscription->end_date->addDays($this->additionalDays);
-
-                // Update the subscription end date and additional days
-                $subscription->end_date = $newEndDate;
-                $subscription->additional_days += $this->additionalDays;
-
-                $subscription->save();
-
-
-                // Reset the input field and close the modal
-                $this->additionalDays = null;
-                $this->dispatchBrowserEvent('additionalDaysAdded');
-            }
-        }
+        $subscription->end_date = $endDate;
+        $subscription->save();
+        $this->dispatchBrowserEvent('additionalDaysAdded');
+        $this->resetInputFields();
+    }
+    public function increase()
+    {
+        $this->subscriptionDays++;
     }
 
+    public function decrease()
+    {
+        $this->subscriptionDays--;
+    }
     private function resetInputFields()
     {
         $this->name = '';
@@ -443,8 +442,8 @@ class ListSubscribers extends Component
         $this->phone = '';
         $this->startDate = '';
         $this->endDate = '';
-        $this->subscriptionType = '';
         $this->duration = '';
         $this->gender = null;
+        $this->subscriptionDays = 0;
     }
 }
